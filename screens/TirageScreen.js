@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
 import { GameContext } from '../context/GameContext';
 
 export default function TirageScreen() {
@@ -15,45 +17,63 @@ export default function TirageScreen() {
   const [assignments, setAssignments] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const handleDraw = () => {
-    if (users.length === 0 || roles.length === 0) {
-      alert("Ajoutez des utilisateurs et des rôles d'abord.");
-      return;
-    }
-
-    // Créer la liste des rôles en fonction de leur count
-    const rolePool = [];
-    roles.forEach((role) => {
-      for (let i = 0; i < role.count; i++) {
-        rolePool.push(role.name);
+  useEffect(() => {
+  const loadAssignments = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('assignments');
+      if (stored) {
+        setAssignments(JSON.parse(stored));
       }
-    });
-
-    if (rolePool.length < users.length) {
-      alert("Pas assez de rôles pour tous les utilisateurs !");
-      return;
+    } catch (error) {
+      console.error('Erreur lors du chargement des tirages :', error);
     }
-
-    // Mélanger les rôles aléatoirement
-    const shuffledRoles = rolePool.sort(() => Math.random() - 0.5);
-
-    setIsDrawing(true);
-    setTimeout(() => {
-      const result = users.map((user, index) => ({
-        username: user.username,
-        role: shuffledRoles[index],
-        state: 'vivant',
-      }));
-      setAssignments(result);
-      setIsDrawing(false);
-    }, 2000); // Simulation de chargement (2 secondes)
   };
 
-  const toggleState = (index) => {
-    const updated = [...assignments];
-    updated[index].state = updated[index].state === 'vivant' ? 'mort' : 'vivant';
-    setAssignments(updated);
-  };
+  loadAssignments();
+}, []);
+
+
+ const handleDraw = async () => {
+  if (users.length === 0 || roles.length === 0) {
+    alert("Ajoutez des utilisateurs et des rôles d'abord.");
+    return;
+  }
+
+  const rolePool = [];
+  roles.forEach((role) => {
+    for (let i = 0; i < role.count; i++) {
+      rolePool.push(role.name);
+    }
+  });
+
+  if (rolePool.length < users.length) {
+    alert("Pas assez de rôles pour tous les utilisateurs !");
+    return;
+  }
+
+  const shuffledRoles = rolePool.sort(() => Math.random() - 0.5);
+
+  setIsDrawing(true);
+
+  setTimeout(async () => {
+    const result = users.map((user, index) => ({
+      username: user.username,
+      role: shuffledRoles[index],
+      state: 'vivant',
+    }));
+    setAssignments(result);
+    setIsDrawing(false);
+    await AsyncStorage.setItem('assignments', JSON.stringify(result));
+  }, 2000);
+};
+
+
+  const toggleState = async (index) => {
+  const updated = [...assignments];
+  updated[index].state = updated[index].state === 'vivant' ? 'mort' : 'vivant';
+  setAssignments(updated);
+  await AsyncStorage.setItem('assignments', JSON.stringify(updated));
+};
 
   const renderItem = ({ item, index }) => (
     <TouchableOpacity onPress={() => toggleState(index)}>
@@ -101,6 +121,7 @@ export default function TirageScreen() {
             data={assignments}
             keyExtractor={(_, index) => index.toString()}
             renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 30 }} 
           />
         </>
       )}

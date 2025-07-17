@@ -133,6 +133,7 @@ export default function AddUserScreen({ navigation }) {
         data={users}
         keyExtractor={(item, index) => `${index}-${item.username}`}
         renderItem={renderItem}
+        contentContainerStyle={{ paddingBottom: 30 }} 
         ListEmptyComponent={
           <Text style={styles.empty}>Aucun utilisateur</Text>
         }

@@ -1,13 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import React, { useLayoutEffect } from 'react';
+import { View, Text, StyleSheet, Button, Alert, TouchableOpacity } from 'react-native';
 
 export default function AdminDashboard({ navigation }) {
+  // Configuration du bouton de déconnexion dans l'en-tête
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Déconnexion</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  // Fonction de déconnexion
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Voulez-vous vraiment vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Se déconnecter',
+          style: 'destructive',
+          onPress: () => navigation.replace('Login'), 
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   const handleAddUser = () => {
-   navigation.navigate('AddUser');
+    navigation.navigate('AddUser');
   };
 
   const handleAddRole = () => {
-   navigation.navigate('AddRole');
+    navigation.navigate('AddRole');
   };
 
   const handleStartDraw = () => {
@@ -56,5 +84,16 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '80%',
     marginVertical: 10,
+  },
+  logoutButton: {
+    marginRight: 15,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#e74c3c',
+    borderRadius: 6,
+  },
+  logoutText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

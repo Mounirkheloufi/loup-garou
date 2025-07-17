@@ -135,6 +135,7 @@ export default function AddRoleScreen({ navigation }) {
         data={roles}
         keyExtractor={(item, index) => `${index}-${item.name}`}
         renderItem={renderItem}
+        contentContainerStyle={{ paddingBottom: 30 }}
         ListEmptyComponent={<Text style={styles.empty}>Aucun rôle</Text>}
       />
     </View>
